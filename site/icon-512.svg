@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">MorisMoney Compass</title>
+  <rect width="512" height="512" rx="112" fill="#0d6b56"/>
+  <circle cx="256" cy="256" r="154" fill="#ffffff" opacity="0.13"/>
+  <path d="m256 101 59 144-59 166-59-144Z" fill="#ffffff"/>
+  <path d="m256 101 59 144-118 22Z" fill="#f2c94c"/>
+  <circle cx="256" cy="256" r="24" fill="#0d6b56"/>
+</svg>
