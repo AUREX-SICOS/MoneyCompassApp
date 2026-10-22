@@ -1,0 +1,68 @@
+name: Publish reviewed cash and overdue fix — 22 Oct 2026
+on:
+  push:
+    branches:
+      - release-candidate/v061-cash-overdue-20261022
+permissions:
+  contents: write
+  actions: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout public main (retain rollback)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Retrieve and verify the tested compiled-only site
+        env:
+          COMPILED_URL: "https://sdmntprindiasocentral.oaiusercontent.com/files/00000000-4b78-8211-859e-99b771c3560b/raw?se=2026-10-22T02%3A58%3A33Z&sp=r&sv=2026-02-06&sr=b&scid=fb26e9b1-6218-56f7-8455-a4329746cd1e&skoid=c094fe1e-1dc0-485a-8de0-10ab942be48f&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-22T01%3A44%3A04Z&ske=2026-10-23T01%3A44%3A04Z&sks=b&skv=2026-02-06&sig=jZB3/GEc1xQPKcTqJAKgHCAMKJHaLPBcjpMWIDDYaRc%3D"
+          COMPILED_SHA256: "c180b6530763729662c2daee691f18fa5730c4a58c90c96093d74dc7900c1e4d"
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "f06bd93cf0bee71f05abfa40508165c5ecb6f05e"
+          curl -fsSL --retry 3 --max-time 90 "$COMPILED_URL" -o /tmp/morismoney-v061.zip
+          echo "$COMPILED_SHA256  /tmp/morismoney-v061.zip" | sha256sum --check -
+          unzip -tqq /tmp/morismoney-v061.zip
+          mkdir -p /tmp/morismoney-new-site
+          unzip -q /tmp/morismoney-v061.zip -d /tmp/morismoney-new-site
+          test -s /tmp/morismoney-new-site/index.html
+          test -s /tmp/morismoney-new-site/run/index.html
+          test -s /tmp/morismoney-new-site/home/index.html
+          test -s /tmp/morismoney-new-site/protect/index.html
+          test -d /tmp/morismoney-new-site/_next/static
+          test ! -e /tmp/morismoney-new-site/api
+          grep -q '/MoneyCompassApp' /tmp/morismoney-new-site/index.html
+          if find /tmp/morismoney-new-site -type f \( -name '*.map' -o -name '*.ts' -o -name '*.tsx' -o -name '.env*' \) | grep -q .; then
+            echo 'Refusing to publish private source, source maps or env files'; exit 1
+          fi
+      - name: Commit updated public compiled site
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "f06bd93cf0bee71f05abfa40508165c5ecb6f05e"
+          rsync -a --delete /tmp/morismoney-new-site/ site/
+          touch site/.nojekyll
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A site
+          if ! git diff --cached --quiet; then
+            git commit -m 'release: compiled MorisMoney v0.6.1 cash and overdue correction (3dbe53d)'
+            git push origin HEAD:main
+          fi
+          echo "Public main: $(git rev-parse HEAD)"
+      - name: Trigger existing GitHub Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/AUREX-SICOS/MoneyCompassApp/actions/workflows/deploy-pages.yml/dispatches \
+            -d '{"ref":"main"}'
