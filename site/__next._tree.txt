@@ -1,2 +1,2 @@
-:HL["/MoneyCompassApp/_next/static/chunks/12k18vs5xx7qv.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"2OBBKhYtz66WnRIKOPD3t"}
+:HL["/MoneyCompassApp/_next/static/chunks/13a_rw0gvwt2z.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"hbDP9mm36WP91YQf88dhO"}
